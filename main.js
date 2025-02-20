@@ -1,4 +1,3 @@
-// main.js
 import { getProducts, getBorrowList, getInventoryList } from "./api.js";
 import { renderCards } from "./render.js";
 
