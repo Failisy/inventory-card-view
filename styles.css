@@ -123,12 +123,13 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 60px;     /* 원형 지름 (디자인에 맞춰 조절) */
-  height: 60px;    /* 원형 지름 (디자인에 맞춰 조절) */
+  width: 20px;      /* 작게 조정 */
+  height: 20px;     /* 작게 조정 */
   border-radius: 50%;
   color: #fff;
   font-size: 12px;
   font-weight: bold;
-  margin-left: 6px; /* 필요 시 간격 조절 */
+  margin-left: 6px;
 }
+
 
