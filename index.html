@@ -7,13 +7,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inventory Card View</title>
   <style>
-    /* 기본 스타일 */
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 20px;
+    /* 컨테이너: 한 행에 하나의 카드 */
+    .card-container {
+      display: block;
+      max-width: 800px;
+      margin: 0 auto;
     }
+    /* 카드 기본 스타일 */
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 15px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .card:hover {
+      background: #f9f9f9;
+    }
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 24px;
+      color: #333;
+    }
+    .card p {
+      margin: 4px 0;
+      font-size: 16px;
+      color: #555;
+    }
+    /* 태그 스타일: 각 태그는 inline-block, 배경색과 라운드 처리 */
+    .tag {
+      display: inline-block;
+      background: #e0e0e0;
+      color: #333;
+      padding: 4px 8px;
+      margin-right: 6px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+    /* 기본 정보와 추가 정보를 같은 행에 나열 */
+    .info-row {
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      gap: 15px;
+      font-size: 16px;
+    }
+    /* 기본 보이는 영역 */
+    .main-info {
+      margin-bottom: 10px;
+    }
+    /* 추가 정보: 기본 숨김, 확장 시 인라인으로 표시 */
+    .extra-details {
+      display: none;
+      margin-top: 10px;
+    }
+    .card.expanded .extra-details {
+      display: inline-flex;
+      align-items: center;
+      gap: 15px;
+      white-space: nowrap;
+    }
+    /* 검색창 스타일 */
     .search-container {
       text-align: center;
       margin-bottom: 20px;
@@ -28,45 +84,6 @@
       font-size: 16px;
       cursor: pointer;
     }
-    .card-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-    }
-    .card {
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      padding: 15px;
-      width: 300px;
-      transition: transform 0.2s;
-      max-width: -moz-fit-content;
-      max-width: fit-content;
-    }
-    .card:hover {
-      transform: scale(1.02);
-    }
-    .card h2 {
-      margin-top: 0;
-      font-size: 20px;
-      color: #333;
-    }
-    .card p {
-      margin: 5px 0;
-      color: #555;
-      font-size: 14px;
-    }
-    .borrow-info {
-      background: #f9f9f9;
-      border-top: 1px solid #ddd;
-      padding-top: 10px;
-      margin-top: 10px;
-    }
-    .borrow-info p {
-      font-size: 13px;
-      margin: 4px 0;
-    }
   </style>
 </head>
 <body>
@@ -80,7 +97,7 @@
   </div>
 
   <script>
-    // 스프레드시트 ID와 각 시트의 gid (제공하신 값)
+    // 스프레드시트 ID 및 각 시트의 gid (제공하신 값)
     const spreadsheetId = "1cdECKnvPoVWmvw36BDEp5JeIRHKXRaGHeaqqWWRB9Ow";
     const productGid    = "0";
     const borrowListGid = "164497694";
@@ -91,16 +108,11 @@
     const borrowUrl    = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&gid=${borrowListGid}`;
     const inventoryUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&gid=${inventoryGid}`;
     
-    // parseGvizData 함수: overrideKeys 매개변수를 지원하여 헤더를 재정의할 수 있습니다.
+    // parseGvizData 함수: overrideKeys 매개변수를 지원하여 헤더를 재정의합니다.
     function parseGvizData(text, overrideKeys) {
       let jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf(')'));
       let json = JSON.parse(jsonStr);
-      let cols;
-      if (overrideKeys) {
-        cols = overrideKeys;
-      } else {
-        cols = json.table.cols.map(col => col.label);
-      }
+      let cols = overrideKeys ? overrideKeys : json.table.cols.map(col => col.label);
       let rows = json.table.rows;
       let dataArray = [];
       rows.forEach(row => {
@@ -114,14 +126,14 @@
       return dataArray;
     }
     
-    // 데이터를 동시에 가져오기
+    // 데이터 동시에 가져오기
     Promise.all([
       fetch(productUrl).then(res => res.text()).then(text => parseGvizData(text)),
-      // borrow_list의 경우, 헤더를 재정의합니다.
+      // borrow_list: override 헤더 (borrow_id, product_id, borrower_id, unit, rank, name, military_id, password, borrow_date, return_date, due_date, remaining_days)
       fetch(borrowUrl).then(res => res.text()).then(text => parseGvizData(text, [
          "borrow_id", "product_id", "borrower_id", "unit", "rank", "name", "military_id", "password", "borrow_date", "return_date", "due_date", "remaining_days"
       ])),
-      // inventory_list의 경우, 열 제목이 비어 있으므로 overrideKeys를 사용합니다.
+      // inventory_list: 헤더 재정의 (inventory_id, product_id, borrow_id)
       fetch(inventoryUrl).then(res => res.text()).then(text => parseGvizData(text, [
          "inventory_id", "product_id", "borrow_id"
       ]))
@@ -139,12 +151,12 @@
       console.error("데이터를 가져오는 중 오류 발생:", err);
     });
     
-    // 카드 렌더링 함수 (검색 필터 적용)
+    // 카드 렌더링 함수
     function renderCards(filter = "") {
       const container = document.getElementById("cardContainer");
       container.innerHTML = "";
       
-      // Inventory_List를 기준으로 Product의 product_id, title, author로 필터링
+      // Inventory_List 기준 필터링 (product_id, title, author)
       const filteredInventory = window.inventoryList.filter(inv => {
          const product = window.products.find(p => p["product_id"] === inv["product_id"]);
          if (!product) return false;
@@ -157,29 +169,50 @@
          const product = window.products.find(p => p["product_id"] === inv["product_id"]);
          const borrow = window.borrowList.find(b => b["borrow_id"] === inv["borrow_id"]);
          
-         const card = document.createElement("div");
-         card.className = "card";
+         // 카드 기본 내용
+         let cardHTML = `<div class="main-info">`;
+         cardHTML += `<h2>${product["title"]}</h2>`;
+         cardHTML += `<p><strong>ISBN:</strong> ${product["ea_isbn"]}</p>`;
+         cardHTML += `<p><strong>저자:</strong> ${product["author"]}</p>`;
+         cardHTML += `<p><strong>카테고리:</strong> ${product["category"]}</p>`;
+         // 태그: 쉼표로 분할하여 각각 스타일 적용
+         if(product["tag"]) {
+           const tags = product["tag"].split(",").map(tag => tag.trim()).filter(tag => tag !== "");
+           cardHTML += `<p><strong>태그:</strong> `;
+           tags.forEach(t => {
+             cardHTML += `<span class="tag">${t}</span>`;
+           });
+           cardHTML += `</p>`;
+         }
+         // 대출 기록이 있는 경우 due_date 표시
+         if(borrow && borrow["borrow_id"]) {
+           cardHTML += `<p><strong>반납예정일:</strong> ${borrow["due_date"]}</p>`;
+         }
+         cardHTML += `</div>`;
          
-         let html = `<h2>${product["title"]}</h2>`;
-         html += `<p><strong>상품 ID:</strong> ${product["product_id"]}</p>`;
-         html += `<p><strong>ISBN:</strong> ${product["ea_isbn"]}</p>`;
-         html += `<p><strong>저자:</strong> ${product["author"]}</p>`;
-         html += `<p><strong>출판사:</strong> ${product["publisher"]}</p>`;
-         html += `<p><strong>카테고리:</strong> ${product["category"]}</p>`;
-         html += `<p><strong>태그:</strong> ${product["tag"]}</p>`;
-         
-         // 대출 기록이 있을 경우 대출 정보 표시
-         if (borrow && borrow["borrow_id"]) {
-            html += `<div class="borrow-info">`;
-            html += `<p><strong>대출자:</strong> ${borrow["name"]} (${borrow["rank"]})</p>`;
-            html += `<p><strong>부대:</strong> ${borrow["unit"]}</p>`;
-            html += `<p><strong>대출일:</strong> ${borrow["borrow_date"]}</p>`;
-            html += `<p><strong>반납예정일:</strong> ${borrow["due_date"]}</p>`;
-            html += `<p><strong>남은 일수:</strong> ${borrow["remaining_days"]}</p>`;
-            html += `</div>`;
+         // 확장 시 보일 추가 정보 (borrow 정보: military_id, unit, rank, name) - 인라인 배치
+         let extraHTML = "";
+         if(borrow && borrow["borrow_id"]) {
+           extraHTML += `<div class="extra-details">`;
+           extraHTML += `<span><strong>군번:</strong> ${borrow["military_id"]}</span>`;
+           extraHTML += `<span><strong>부대:</strong> ${borrow["unit"]}</span>`;
+           extraHTML += `<span><strong>계급:</strong> ${borrow["rank"]}</span>`;
+           extraHTML += `<span><strong>이름:</strong> ${borrow["name"]}</span>`;
+           extraHTML += `</div>`;
          }
          
-         card.innerHTML = html;
+         // 최종 카드 HTML
+         const card = document.createElement("div");
+         card.className = "card";
+         card.innerHTML = cardHTML + extraHTML;
+         
+         // 카드 클릭 시 확장/축소 토글 (borrow 기록이 있을 경우)
+         if(borrow && borrow["borrow_id"]) {
+           card.addEventListener("click", () => {
+             card.classList.toggle("expanded");
+           });
+         }
+         
          container.appendChild(card);
       });
     }
