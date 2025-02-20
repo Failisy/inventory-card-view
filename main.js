@@ -1,42 +1,73 @@
 import { getProducts, getBorrowList, getInventoryList } from "./api.js";
 import { renderCards } from "./render.js";
 
+// 전역 데이터
+let products = [];
+let borrowList = [];
+let inventoryList = [];
+
+// Tom Select 인스턴스 (필드 선택용)
+let fieldSelectInstance;
+
+// init
 async function init() {
   try {
-    const [products, borrowList, inventoryList] = await Promise.all([
+    const [p, b, i] = await Promise.all([
       getProducts(),
       getBorrowList(),
       getInventoryList()
     ]);
-    // 전역 변수에 저장 (나중 이벤트에서도 활용)
-    window.products = products;
-    window.borrowList = borrowList;
-    window.inventoryList = inventoryList;
+    products = p;
+    borrowList = b;
+    inventoryList = i;
     console.log("products:", products);
     console.log("borrowList:", borrowList);
     console.log("inventoryList:", inventoryList);
-    // 초기 렌더링: 인자 전달
-    renderCards(products, borrowList, inventoryList, "");
+
+    // Tom Select 초기화
+    fieldSelectInstance = new TomSelect('#searchFieldsSelect', {
+      plugins: ['remove_button'], // 선택 항목 제거 버튼
+      onChange: () => {
+        // 선택된 필드가 바뀔 때마다 다시 렌더링
+        doRender();
+      },
+    });
+
+    // 초기 렌더링
+    doRender();
   } catch (err) {
     console.error("데이터를 가져오는 중 오류 발생:", err);
   }
 }
 
+// 실제 렌더링 호출
+function doRender() {
+  const query = document.getElementById("searchInput").value.trim();
+  const selectedFields = fieldSelectInstance.getValue(); // ex) ["name", "title", ...]
+  renderCards(products, borrowList, inventoryList, query, selectedFields);
+}
+
 init();
 
-// 이벤트 처리: 각 이벤트에서 renderCards에 필요한 인자들을 전달합니다.
-document.getElementById("searchBtn").addEventListener("click", () => {
-  renderCards(window.products, window.borrowList, window.inventoryList, document.getElementById("searchInput").value);
+/* 이벤트 핸들러들 */
+const searchBtn = document.getElementById("searchBtn");
+searchBtn.addEventListener("click", () => {
+  doRender();
 });
-document.getElementById("searchInput").addEventListener("keyup", function(e) {
-  if (e.key === "Enter") renderCards(window.products, window.borrowList, window.inventoryList, this.value);
+
+const searchInput = document.getElementById("searchInput");
+searchInput.addEventListener("keyup", (e) => {
+  if(e.key === "Enter") {
+    doRender();
+  }
 });
-document.getElementById("borrowToggle").addEventListener("change", () => {
-  renderCards(window.products, window.borrowList, window.inventoryList, document.getElementById("searchInput").value);
+
+const borrowToggle = document.getElementById("borrowToggle");
+borrowToggle.addEventListener("change", () => {
+  doRender();
 });
-document.getElementById("sortSelect").addEventListener("change", () => {
-  renderCards(window.products, window.borrowList, window.inventoryList, document.getElementById("searchInput").value);
-});
-document.getElementById("searchFieldsSelect").addEventListener("change", () => {
-  renderCards(window.products, window.borrowList, window.inventoryList, document.getElementById("searchInput").value);
+
+const sortSelect = document.getElementById("sortSelect");
+sortSelect.addEventListener("change", () => {
+  doRender();
 });
