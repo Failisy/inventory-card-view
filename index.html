@@ -76,93 +76,90 @@
   </div>
 
   <script>
-    // 스프레드시트 ID (Google Sheets URL에서 확인)
+    // 스프레드시트 ID와 각 시트의 gid
     const spreadsheetId = "1cdECKnvPoVWmvw36BDEp5JeIRHKXRaGHeaqqWWRB9Ow";
-    
-    // 각 시트의 gid (제공된 값 사용)
-    const inventoryGid = "1418885749";
-    const productGid   = "0";
+    const productGid    = "0";
     const borrowListGid = "164497694";
-
-    // JSON 피드 URL 생성
-    const inventoryUrl = `https://spreadsheets.google.com/feeds/list/${spreadsheetId}/${inventoryGid}/public/values?alt=json`;
-    const productUrl   = `https://spreadsheets.google.com/feeds/list/${spreadsheetId}/${productGid}/public/values?alt=json`;
-    const borrowUrl    = `https://spreadsheets.google.com/feeds/list/${spreadsheetId}/${borrowListGid}/public/values?alt=json`;
-
-    // 모든 시트 데이터 가져오기
-    Promise.all([
-      fetch(productUrl).then(res => res.json()),
-      fetch(borrowUrl).then(res => res.json()),
-      fetch(inventoryUrl).then(res => res.json())
-    ]).then(([productData, borrowData, inventoryData]) => {
-
-      // JSON 피드 파싱 함수: gsx$ 접두어 필드를 객체로 변환
-      function parseEntries(data) {
-        if (!data.feed || !data.feed.entry) return [];
-        return data.feed.entry.map(entry => {
-          const parsed = {};
-          for (let key in entry) {
-            if(key.startsWith("gsx$")){
-              parsed[key.substring(4)] = entry[key]["$t"];
-            }
-          }
-          return parsed;
+    const inventoryGid  = "1418885749";
+    
+    // GViz API URL 생성
+    const productUrl   = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&gid=${productGid}`;
+    const borrowUrl    = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&gid=${borrowListGid}`;
+    const inventoryUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&gid=${inventoryGid}`;
+    
+    // GViz API 응답을 파싱하는 함수
+    function parseGvizData(text) {
+      // 응답은 "/*O_o*/\ngoogle.visualization.Query.setResponse(...);" 형태입니다.
+      let jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf(')'));
+      let json = JSON.parse(jsonStr);
+      // 첫 번째 행에 해당하는 컬럼 이름을 가져옵니다.
+      let cols = json.table.cols.map(col => col.label);
+      let rows = json.table.rows;
+      let dataArray = [];
+      rows.forEach(row => {
+        let obj = {};
+        row.c.forEach((cell, index) => {
+          let key = cols[index];
+          obj[key] = cell ? cell.v : "";
         });
-      }
-
-      // 파싱된 데이터 배열
-      const products = parseEntries(productData);
-      const borrowList = parseEntries(borrowData);
-      const inventoryList = parseEntries(inventoryData);
-
-      // 전역 데이터 저장 (검색 함수에서 사용)
+        dataArray.push(obj);
+      });
+      return dataArray;
+    }
+    
+    // 세 시트의 데이터를 동시에 가져오기
+    Promise.all([
+      fetch(productUrl).then(res => res.text()).then(parseGvizData),
+      fetch(borrowUrl).then(res => res.text()).then(parseGvizData),
+      fetch(inventoryUrl).then(res => res.text()).then(parseGvizData)
+    ])
+    .then(([products, borrowList, inventoryList]) => {
       window.products = products;
       window.borrowList = borrowList;
       window.inventoryList = inventoryList;
-
-      // 초기 카드 렌더링
       renderCards();
-    }).catch(err => {
+    })
+    .catch(err => {
       console.error("데이터를 가져오는 중 오류 발생:", err);
     });
-
+    
     // 카드 렌더링 함수 (검색 필터 적용)
     function renderCards(filter = "") {
       const container = document.getElementById("cardContainer");
       container.innerHTML = "";
       
-      // Inventory_List를 기준으로 필터 적용: 연결된 Product 데이터의 product_id, title, author를 검색
+      // Inventory_List를 기준으로 연결된 Product의 product_id, title, author로 검색 필터 적용
       const filteredInventory = window.inventoryList.filter(inv => {
-        const product = window.products.find(p => p.product_id === inv.product_id);
+        const product = window.products.find(p => p["product_id"] === inv["product_id"]);
         if (!product) return false;
-        const searchStr = (product.product_id + " " + product.title + " " + product.author).toLowerCase();
+        const searchStr = (product["product_id"] + " " + product["title"] + " " + product["author"]).toLowerCase();
         return searchStr.includes(filter.toLowerCase());
       });
-
+      
       // 각 Inventory_List 항목에 대해 카드 생성
       filteredInventory.forEach(inv => {
-        const product = window.products.find(p => p.product_id === inv.product_id);
-        const borrow = window.borrowList.find(b => b.borrow_id === inv.borrow_id);
+        const product = window.products.find(p => p["product_id"] === inv["product_id"]);
+        const borrow = window.borrowList.find(b => b["borrow_id"] === inv["borrow_id"]);
         
         const card = document.createElement("div");
         card.className = "card";
-
-        let html = `<h2>${product.title}</h2>`;
-        html += `<p><strong>상품 ID:</strong> ${product.product_id}</p>`;
-        html += `<p><strong>ISBN:</strong> ${product.ea_isbn}</p>`;
-        html += `<p><strong>저자:</strong> ${product.author}</p>`;
-        html += `<p><strong>출판사:</strong> ${product.publisher}</p>`;
-        html += `<p><strong>카테고리:</strong> ${product.category}</p>`;
-        html += `<p><strong>태그:</strong> ${product.tag}</p>`;
+        
+        let html = `<h2>${product["title"]}</h2>`;
+        html += `<p><strong>상품 ID:</strong> ${product["product_id"]}</p>`;
+        html += `<p><strong>ISBN:</strong> ${product["ea_isbn"]}</p>`;
+        html += `<p><strong>저자:</strong> ${product["author"]}</p>`;
+        html += `<p><strong>출판사:</strong> ${product["publisher"]}</p>`;
+        html += `<p><strong>카테고리:</strong> ${product["category"]}</p>`;
+        html += `<p><strong>태그:</strong> ${product["tag"]}</p>`;
         
         // 대출 기록이 있을 경우 대출 정보 표시
-        if (borrow && borrow.borrow_id) {
+        if (borrow && borrow["borrow_id"]) {
           html += `<div class="borrow-info">`;
-          html += `<p><strong>대출자:</strong> ${borrow.name} (${borrow.rank})</p>`;
-          html += `<p><strong>부대:</strong> ${borrow.unit}</p>`;
-          html += `<p><strong>대출일:</strong> ${borrow.borrow_date}</p>`;
-          html += `<p><strong>반납예정일:</strong> ${borrow.duedate || borrow.due_date}</p>`;
-          html += `<p><strong>남은 일수:</strong> ${borrow.remainingdays || borrow.remaining_days}</p>`;
+          html += `<p><strong>대출자:</strong> ${borrow["name"]} (${borrow["rank"]})</p>`;
+          html += `<p><strong>부대:</strong> ${borrow["unit"]}</p>`;
+          html += `<p><strong>대출일:</strong> ${borrow["borrow_date"]}</p>`;
+          html += `<p><strong>반납예정일:</strong> ${borrow["due_date"]}</p>`;
+          html += `<p><strong>남은 일수:</strong> ${borrow["remaining_days"]}</p>`;
           html += `</div>`;
         }
         
@@ -170,14 +167,13 @@
         container.appendChild(card);
       });
     }
-
-    // 검색 버튼 이벤트 처리
+    
+    // 검색 버튼 및 엔터키 이벤트 처리
     document.getElementById("searchBtn").addEventListener("click", () => {
       const filter = document.getElementById("searchInput").value;
       renderCards(filter);
     });
-
-    // 엔터키로 검색 처리
+    
     document.getElementById("searchInput").addEventListener("keyup", function(e) {
       if (e.key === "Enter") {
         renderCards(this.value);
