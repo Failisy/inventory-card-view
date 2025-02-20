@@ -1,4 +1,3 @@
-// render.js
 import { getRemainingColor } from "./utils.js";
 
 export function renderCards(products, borrowList, inventoryList, filter = "") {
@@ -16,6 +15,7 @@ export function renderCards(products, borrowList, inventoryList, filter = "") {
     if (!product) return false;
     const borrow = borrowList.find(b => b["borrow_id"] === inv["borrow_id"]);
     if (borrowOnly && !(borrow && borrow["borrow_id"])) return false;
+    
     if (query) {
       let found = false;
       selectedFields.forEach(field => {
@@ -137,5 +137,3 @@ export function renderCards(products, borrowList, inventoryList, filter = "") {
     container.appendChild(card);
   });
 }
-  
-export { renderCards };
