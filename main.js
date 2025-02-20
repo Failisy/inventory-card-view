@@ -8,13 +8,15 @@ async function init() {
       getBorrowList(),
       getInventoryList()
     ]);
+    // 전역 변수에 저장 (나중 이벤트에서도 활용)
     window.products = products;
     window.borrowList = borrowList;
     window.inventoryList = inventoryList;
     console.log("products:", products);
     console.log("borrowList:", borrowList);
     console.log("inventoryList:", inventoryList);
-    renderCards();
+    // 초기 렌더링: 인자 전달
+    renderCards(products, borrowList, inventoryList, "");
   } catch (err) {
     console.error("데이터를 가져오는 중 오류 발생:", err);
   }
@@ -22,19 +24,19 @@ async function init() {
 
 init();
 
-// 이벤트 처리
+// 이벤트 처리: 각 이벤트에서 renderCards에 필요한 인자들을 전달합니다.
 document.getElementById("searchBtn").addEventListener("click", () => {
-  renderCards(document.getElementById("searchInput").value);
+  renderCards(window.products, window.borrowList, window.inventoryList, document.getElementById("searchInput").value);
 });
 document.getElementById("searchInput").addEventListener("keyup", function(e) {
-  if (e.key === "Enter") renderCards(this.value);
+  if (e.key === "Enter") renderCards(window.products, window.borrowList, window.inventoryList, this.value);
 });
 document.getElementById("borrowToggle").addEventListener("change", () => {
-  renderCards(document.getElementById("searchInput").value);
+  renderCards(window.products, window.borrowList, window.inventoryList, document.getElementById("searchInput").value);
 });
 document.getElementById("sortSelect").addEventListener("change", () => {
-  renderCards(document.getElementById("searchInput").value);
+  renderCards(window.products, window.borrowList, window.inventoryList, document.getElementById("searchInput").value);
 });
 document.getElementById("searchFieldsSelect").addEventListener("change", () => {
-  renderCards(document.getElementById("searchInput").value);
+  renderCards(window.products, window.borrowList, window.inventoryList, document.getElementById("searchInput").value);
 });
