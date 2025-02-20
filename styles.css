@@ -61,7 +61,7 @@ body {
   color: #333;
 }
 
-/* 카드 컨테이너, 카드, 등은 기존 코드와 동일 */
+/* 카드 컨테이너, 카드, 등 */
 .card-container {
   display: block;
   max-width: 800px;
@@ -84,6 +84,8 @@ body {
   font-size: 20px;
   color: #333;
 }
+
+/* 인라인 정보 컨테이너 (메인, 추가) */
 .main-info, .extra-details {
   display: inline-flex;
   align-items: center;
@@ -95,6 +97,7 @@ body {
   display: inline-flex;
   align-items: center;
 }
+
 /* 태그 스타일 */
 .tag {
   display: inline-block;
@@ -105,6 +108,7 @@ body {
   border-radius: 12px;
   font-size: 12px;
 }
+
 /* 추가 정보 숨김/토글 */
 .extra-details {
   display: none;
@@ -112,4 +116,14 @@ body {
 }
 .card.expanded .extra-details {
   display: inline-flex;
+}
+
+/* 배지 스타일: 남은 일수를 원형 배경으로 표시 */
+.badge {
+  display: inline-block;
+  color: #fff;
+  border-radius: 50%;
+  padding: 6px 10px;
+  min-width: 30px;
+  text-align: center;
 }
