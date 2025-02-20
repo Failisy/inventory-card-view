@@ -87,7 +87,7 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
     const product = products.find(p => p["product_id"] === inv["product_id"]);
     const borrow = borrowList.find(b => b["borrow_id"] === inv["borrow_id"]);
     
-    // 카드 제목
+    // 카드 상단에 제목 표시
     let cardHTML = `<h2 class="card-title">${product["title"] || ""}</h2>`;
     
     // 메인 정보 영역
@@ -108,12 +108,12 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
       }
     }
     
-    // 남은 일수 배지 (숫자 부분만 원형 배지로 감싸고 "일 남음"은 배지 내부에 표시)
+    // 남은 일수 배지: 숫자만 원형 배지로 표시하고 "일 남음"은 배지 외부에 표시
     if (borrow && borrow["borrow_id"]) {
       const days = parseFloat(borrow["remaining_days"] || "0");
       const badgeColor = getRemainingBadgeColor(days);
-      const displayText = (days <= 0) ? "0일 남음" : `${days}일 남음`;
-      cardHTML += `<span class="badge" style="background-color:${badgeColor}">${displayText}</span>`;
+      const numberText = days <= 0 ? "0" : days;
+      cardHTML += `<span><strong>남은 일수:</strong> <span class="badge" style="background-color:${badgeColor}; color:#000;">${numberText}</span>일 남음</span>`;
     }
     cardHTML += `</div>`; // .main-info 종료
     
