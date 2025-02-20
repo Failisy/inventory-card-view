@@ -2,6 +2,10 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <!-- MIME 스니핑 방지를 위한 meta (서버 헤더가 아니라 클라이언트 측 표시용) -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <!-- 캐시 제어를 위한 meta (서버 헤더 대신 사용할 수 있는 경우) -->
+  <meta http-equiv="Cache-Control" content="public, max-age=3600">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inventory Card View</title>
   <style>
@@ -39,6 +43,9 @@
       padding: 15px;
       width: 300px;
       transition: transform 0.2s;
+      /* CSS 최적화: -moz-fit-content 먼저, 그 다음 fit-content */
+      max-width: -moz-fit-content;
+      max-width: fit-content;
     }
     .card:hover {
       transform: scale(1.02);
@@ -76,13 +83,13 @@
   </div>
 
   <script>
-    // 스프레드시트 ID와 각 시트의 gid
+    // 스프레드시트 ID와 각 시트의 gid (제공하신 값)
     const spreadsheetId = "1cdECKnvPoVWmvw36BDEp5JeIRHKXRaGHeaqqWWRB9Ow";
     const productGid    = "0";
     const borrowListGid = "164497694";
     const inventoryGid  = "1418885749";
     
-    // GViz API URL 생성
+    // GViz API URL 생성 (Google Sheets를 "웹에 게시"해야 데이터가 반환됩니다)
     const productUrl   = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&gid=${productGid}`;
     const borrowUrl    = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&gid=${borrowListGid}`;
     const inventoryUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&gid=${inventoryGid}`;
