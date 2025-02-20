@@ -2,49 +2,78 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="Cache-Control" content="public, max-age=3600">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inventory Card View</title>
+  <title>Custom Search UI</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="search-container">
-    <input type="text" id="searchInput" class="search-input" placeholder="검색어 입력">
-    <!-- 다중 선택 검색 필드 -->
-    <select id="searchFieldsSelect" multiple>
-      <option value="name" selected>이름</option>
-      <option value="military_id" selected>군번</option>
-      <option value="category" selected>카테고리</option>
-      <option value="tag" selected>태그</option>
-      <option value="title" selected>제목</option>
-      <option value="author" selected>저자</option>
-      <option value="publisher" selected>출판사</option>
-      <option value="ea_isbn" selected>ISBN</option>
-    </select>
-    <button id="searchBtn" class="search-btn">검색</button>
-    <!-- 토글: 대출 기록 있는 도서만 -->
-    <label><input type="checkbox" id="borrowToggle"> 대출 기록 있는 도서만</label>
-    <!-- 정렬 옵션 드롭다운 -->
-    <select id="sortSelect">
-      <option value="none">정렬 없음</option>
-      <option value="titleAsc">제목 오름차순</option>
-      <option value="titleDesc">제목 내림차순</option>
-      <option value="authorAsc">저자 오름차순</option>
-      <option value="authorDesc">저자 내림차순</option>
-      <option value="categoryAsc">카테고리 오름차순</option>
-      <option value="categoryDesc">카테고리 내림차순</option>
-      <option value="remainingAsc">남은 일수 오름차순</option>
-      <option value="remainingDesc">남은 일수 내림차순</option>
-      <option value="unitAsc">부대 오름차순</option>
-      <option value="unitDesc">부대 내림차순</option>
-    </select>
+  <!-- 첫 번째 줄: 멀티 셀렉트 + 검색어 입력 + 검색 버튼 -->
+  <div class="search-row">
+    <div class="multi-select-container">
+      <div class="selected-tags" id="selectedTags">
+        <!-- 선택된 항목을 태그 형태로 표시할 영역 -->
+      </div>
+      <div class="options-dropdown" id="optionsDropdown">
+        <!-- 옵션 목록 (보이기/숨기기) -->
+        <label>
+          <input type="checkbox" value="이름" /> 이름
+        </label>
+        <label>
+          <input type="checkbox" value="군번" /> 군번
+        </label>
+        <label>
+          <input type="checkbox" value="카테고리" /> 카테고리
+        </label>
+        <label>
+          <input type="checkbox" value="태그" /> 태그
+        </label>
+        <label>
+          <input type="checkbox" value="제목" /> 제목
+        </label>
+        <label>
+          <input type="checkbox" value="저자" /> 저자
+        </label>
+        <label>
+          <input type="checkbox" value="출판사" /> 출판사
+        </label>
+        <label>
+          <input type="checkbox" value="ISBN" /> ISBN
+        </label>
+      </div>
+    </div>
+    
+    <div class="search-input-container">
+      <input type="text" id="searchInput" placeholder="검색어 입력" />
+      <button id="searchBtn">검색</button>
+    </div>
   </div>
-  <!-- 검색 결과 갯수 표시 -->
-  <div id="resultCount"></div>
-  <div class="card-container" id="cardContainer"></div>
   
-  <!-- Main script (ES6 module) -->
-  <script type="module" src="main.js"></script>
+  <!-- 두 번째 줄: 왼쪽에 체크박스, 오른쪽에 정렬 드롭다운 -->
+  <div class="options-row">
+    <div class="borrow-toggle">
+      <label>
+        <input type="checkbox" id="borrowToggle" />
+        대출 중
+      </label>
+    </div>
+    <div class="sort-dropdown">
+      <select id="sortSelect">
+        <option value="none">정렬 없음</option>
+        <option value="titleAsc">제목 오름차순</option>
+        <option value="titleDesc">제목 내림차순</option>
+        <option value="authorAsc">저자 오름차순</option>
+        <option value="authorDesc">저자 내림차순</option>
+        <option value="categoryAsc">카테고리 오름차순</option>
+        <option value="categoryDesc">카테고리 내림차순</option>
+        <option value="remainingAsc">남은 일수 오름차순</option>
+        <option value="remainingDesc">남은 일수 내림차순</option>
+        <option value="unitAsc">부대 오름차순</option>
+        <option value="unitDesc">부대 내림차순</option>
+      </select>
+    </div>
+  </div>
+  
+  <!-- 검색 결과 갯수, 카드 목록 등 기존 요소는 필요 시 아래에 배치 -->
+  
+  <script src="script.js"></script>
 </body>
 </html>
