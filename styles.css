@@ -123,13 +123,14 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;      /* 작게 조정 */
-  height: 20px;     /* 작게 조정 */
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  color: #fff;
+  color: #000;
   font-size: 12px;
   font-weight: bold;
   margin-left: 6px;
 }
+
 
 
