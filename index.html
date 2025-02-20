@@ -121,7 +121,10 @@
       fetch(borrowUrl).then(res => res.text()).then(text => parseGvizData(text, [
          "borrow_id", "product_id", "borrower_id", "unit", "rank", "name", "military_id", "password", "borrow_date", "return_date", "due_date", "remaining_days"
       ])),
-      fetch(inventoryUrl).then(res => res.text()).then(text => parseGvizData(text))
+      // inventory_list의 경우, 열 제목이 비어 있으므로 overrideKeys를 사용합니다.
+      fetch(inventoryUrl).then(res => res.text()).then(text => parseGvizData(text, [
+         "inventory_id", "product_id", "borrow_id"
+      ]))
     ])
     .then(([products, borrowList, inventoryList]) => {
       window.products = products;
