@@ -1,4 +1,3 @@
-// utils.js
 export function getRemainingColor(days) {
   const maxThreshold = 20;
   const d = parseFloat(days);
