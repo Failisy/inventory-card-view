@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inventory Card View</title>
+  <style>
+    /* 기본 스타일 */
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    .search-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .search-input {
+      width: 300px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    .search-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 15px;
+      width: 300px;
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: scale(1.02);
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 20px;
+      color: #333;
+    }
+    .card p {
+      margin: 5px 0;
+      color: #555;
+      font-size: 14px;
+    }
+    .borrow-info {
+      background: #f9f9f9;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+    .borrow-info p {
+      font-size: 13px;
+      margin: 4px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="search-container">
+    <input type="text" id="searchInput" class="search-input" placeholder="상품 ID, 제목, 저자 등으로 검색...">
+    <button id="searchBtn" class="search-btn">검색</button>
+  </div>
+  
+  <div class="card-container" id="cardContainer">
+    <!-- 카드들이 이곳에 표시됩니다 -->
+  </div>
+
+  <script>
+    // 스프레드시트 ID (Google Sheets URL에서 확인)
+    const spreadsheetId = "1cdECKnvPoVWmvw36BDEp5JeIRHKXRaGHeaqqWWRB9Ow";
+    
+    // 각 시트의 gid (제공된 값 사용)
+    const inventoryGid = "1418885749";
+    const productGid   = "0";
+    const borrowListGid = "164497694";
+
+    // JSON 피드 URL 생성
+    const inventoryUrl = `https://spreadsheets.google.com/feeds/list/${spreadsheetId}/${inventoryGid}/public/values?alt=json`;
+    const productUrl   = `https://spreadsheets.google.com/feeds/list/${spreadsheetId}/${productGid}/public/values?alt=json`;
+    const borrowUrl    = `https://spreadsheets.google.com/feeds/list/${spreadsheetId}/${borrowListGid}/public/values?alt=json`;
+
+    // 모든 시트 데이터 가져오기
+    Promise.all([
+      fetch(productUrl).then(res => res.json()),
+      fetch(borrowUrl).then(res => res.json()),
+      fetch(inventoryUrl).then(res => res.json())
+    ]).then(([productData, borrowData, inventoryData]) => {
+
+      // JSON 피드 파싱 함수: gsx$ 접두어 필드를 객체로 변환
+      function parseEntries(data) {
+        if (!data.feed || !data.feed.entry) return [];
+        return data.feed.entry.map(entry => {
+          const parsed = {};
+          for (let key in entry) {
+            if(key.startsWith("gsx$")){
+              parsed[key.substring(4)] = entry[key]["$t"];
+            }
+          }
+          return parsed;
+        });
+      }
+
+      // 파싱된 데이터 배열
+      const products = parseEntries(productData);
+      const borrowList = parseEntries(borrowData);
+      const inventoryList = parseEntries(inventoryData);
+
+      // 전역 데이터 저장 (검색 함수에서 사용)
+      window.products = products;
+      window.borrowList = borrowList;
+      window.inventoryList = inventoryList;
+
+      // 초기 카드 렌더링
+      renderCards();
+    }).catch(err => {
+      console.error("데이터를 가져오는 중 오류 발생:", err);
+    });
+
+    // 카드 렌더링 함수 (검색 필터 적용)
+    function renderCards(filter = "") {
+      const container = document.getElementById("cardContainer");
+      container.innerHTML = "";
+      
+      // Inventory_List를 기준으로 필터 적용: 연결된 Product 데이터의 product_id, title, author를 검색
+      const filteredInventory = window.inventoryList.filter(inv => {
+        const product = window.products.find(p => p.product_id === inv.product_id);
+        if (!product) return false;
+        const searchStr = (product.product_id + " " + product.title + " " + product.author).toLowerCase();
+        return searchStr.includes(filter.toLowerCase());
+      });
+
+      // 각 Inventory_List 항목에 대해 카드 생성
+      filteredInventory.forEach(inv => {
+        const product = window.products.find(p => p.product_id === inv.product_id);
+        const borrow = window.borrowList.find(b => b.borrow_id === inv.borrow_id);
+        
+        const card = document.createElement("div");
+        card.className = "card";
+
+        let html = `<h2>${product.title}</h2>`;
+        html += `<p><strong>상품 ID:</strong> ${product.product_id}</p>`;
+        html += `<p><strong>ISBN:</strong> ${product.ea_isbn}</p>`;
+        html += `<p><strong>저자:</strong> ${product.author}</p>`;
+        html += `<p><strong>출판사:</strong> ${product.publisher}</p>`;
+        html += `<p><strong>카테고리:</strong> ${product.category}</p>`;
+        html += `<p><strong>태그:</strong> ${product.tag}</p>`;
+        
+        // 대출 기록이 있을 경우 대출 정보 표시
+        if (borrow && borrow.borrow_id) {
+          html += `<div class="borrow-info">`;
+          html += `<p><strong>대출자:</strong> ${borrow.name} (${borrow.rank})</p>`;
+          html += `<p><strong>부대:</strong> ${borrow.unit}</p>`;
+          html += `<p><strong>대출일:</strong> ${borrow.borrow_date}</p>`;
+          html += `<p><strong>반납예정일:</strong> ${borrow.duedate || borrow.due_date}</p>`;
+          html += `<p><strong>남은 일수:</strong> ${borrow.remainingdays || borrow.remaining_days}</p>`;
+          html += `</div>`;
+        }
+        
+        card.innerHTML = html;
+        container.appendChild(card);
+      });
+    }
+
+    // 검색 버튼 이벤트 처리
+    document.getElementById("searchBtn").addEventListener("click", () => {
+      const filter = document.getElementById("searchInput").value;
+      renderCards(filter);
+    });
+
+    // 엔터키로 검색 처리
+    document.getElementById("searchInput").addEventListener("keyup", function(e) {
+      if (e.key === "Enter") {
+        renderCards(this.value);
+      }
+    });
+  </script>
+</body>
+</html>
