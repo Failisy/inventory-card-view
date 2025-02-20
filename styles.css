@@ -5,6 +5,7 @@ body {
   padding: 20px;
   font-size: 14px;
 }
+
 /* 검색 영역 */
 .search-container {
   text-align: center;
@@ -24,6 +25,7 @@ select, label {
   font-size: 14px;
   margin: 0 8px;
 }
+
 /* 검색 결과 갯수 */
 #resultCount {
   text-align: center;
@@ -31,6 +33,7 @@ select, label {
   font-size: 14px;
   color: #333;
 }
+
 /* 카드 컨테이너: 한 행에 하나의 카드 */
 .card-container {
   display: block;
@@ -54,7 +57,8 @@ select, label {
   font-size: 20px;
   color: #333;
 }
-/* 인라인 정보 컨테이너: flex-wrap 적용 */
+
+/* 인라인 정보 컨테이너 (메인, 추가) */
 .main-info, .extra-details {
   display: inline-flex;
   align-items: center;
@@ -66,6 +70,7 @@ select, label {
   display: inline-flex;
   align-items: center;
 }
+
 /* 태그 스타일 */
 .tag {
   display: inline-block;
@@ -76,6 +81,7 @@ select, label {
   border-radius: 12px;
   font-size: 12px;
 }
+
 /* 추가 정보 기본 숨김, 클릭 시 인라인 표시 */
 .extra-details {
   display: none;
