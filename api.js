@@ -1,4 +1,3 @@
-// api.js
 export const spreadsheetId = "1cdECKnvPoVWmvw36BDEp5JeIRHKXRaGHeaqqWWRB9Ow";
 export const productGid = "0";
 export const borrowListGid = "164497694";
