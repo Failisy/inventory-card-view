@@ -1,92 +1,102 @@
 body {
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
   margin: 0;
   padding: 20px;
-  font-size: 14px;
+  font-family: sans-serif;
+  background: #f4f4f4;
 }
 
-/* 검색 영역 */
-.search-container {
-  text-align: center;
-  margin-bottom: 20px;
-}
-.search-input {
-  width: 300px;
-  padding: 8px;
-  font-size: 14px;
-}
-.search-btn {
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-}
-select, label {
-  font-size: 14px;
-  margin: 0 8px;
-}
-
-/* 검색 결과 갯수 */
-#resultCount {
-  text-align: center;
+/* 첫 번째 줄: 멀티 셀렉트 + 검색어 + 검색 버튼 */
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 10px;
-  font-size: 14px;
-  color: #333;
 }
-
-/* 카드 컨테이너: 한 행에 하나의 카드 */
-.card-container {
-  display: block;
-  max-width: 800px;
-  margin: 0 auto;
-}
-.card {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  padding: 10px 15px;
-  margin-bottom: 20px;
+.multi-select-container {
+  position: relative;
+  width: 240px;
   cursor: pointer;
-  transition: background 0.2s;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: 8px;
 }
-.card:hover {
-  background: #f9f9f9;
-}
-.card-title {
-  margin: 0 0 8px;
-  font-size: 20px;
-  color: #333;
-}
-
-/* 인라인 정보 컨테이너 (메인, 추가) */
-.main-info, .extra-details {
-  display: inline-flex;
-  align-items: center;
-  gap: 15px;
+.selected-tags {
+  display: flex;
   flex-wrap: wrap;
-  white-space: nowrap;
+  gap: 5px;
 }
-.main-info span, .extra-details span {
+.tag-chip {
+  background: #ff5252;
+  color: #fff;
+  border-radius: 16px;
+  padding: 3px 10px;
+  font-size: 13px;
   display: inline-flex;
   align-items: center;
 }
-
-/* 태그 스타일 */
-.tag {
-  display: inline-block;
-  background: #e0e0e0;
-  color: #333;
-  padding: 2px 6px;
-  margin-right: 4px;
-  border-radius: 12px;
-  font-size: 12px;
+.tag-chip span {
+  margin-left: 5px;
+  cursor: pointer;
+  font-weight: bold;
 }
-
-/* 추가 정보 기본 숨김, 클릭 시 인라인 표시 */
-.extra-details {
+.options-dropdown {
+  position: absolute;
+  top: 42px;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px;
   display: none;
-  margin-top: 8px;
+  flex-direction: column;
+  gap: 4px;
 }
-.card.expanded .extra-details {
-  display: inline-flex;
+.options-dropdown label {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.search-input-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.search-input-container input {
+  width: 200px;
+  padding: 8px;
+}
+.search-input-container button {
+  padding: 8px 16px;
+  background: #ff5252;
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 두 번째 줄: 체크박스 + 정렬 드롭다운 */
+.options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.borrow-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+.sort-dropdown select {
+  padding: 5px;
+  font-size: 14px;
+}
+
+/* Dropdown open/close 상태 */
+.multi-select-container.open .options-dropdown {
+  display: flex;
 }
