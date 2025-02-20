@@ -120,10 +120,14 @@ body {
 
 /* 배지 스타일: 남은 일수를 원형 배경으로 표시 */
 .badge {
-  display: inline-block;
-  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;      /* 원형 지름 */
+  height: 60px;     /* 원형 지름 */
   border-radius: 50%;
-  padding: 6px 10px;
-  min-width: 30px;
-  text-align: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
 }
+
