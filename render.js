@@ -1,13 +1,5 @@
 import { getRemainingBadgeColor } from "./utils.js";
 
-/**
- * renderCards
- * @param {Array} products
- * @param {Array} borrowList
- * @param {Array} inventoryList
- * @param {String} filter (검색어)
- * @param {Array} selectedFields (선택된 검색 필드)
- */
 export function renderCards(products, borrowList, inventoryList, filter = "", selectedFields = []) {
   const container = document.getElementById("cardContainer");
   container.innerHTML = "";
@@ -33,7 +25,9 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
         } else {
           if (product[field]) value = product[field].toString().toLowerCase();
         }
-        if (value.includes(query)) found = true;
+        if (value.includes(query)) {
+          found = true;
+        }
       });
       if (!found) return false;
     }
@@ -93,7 +87,7 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
     const product = products.find(p => p["product_id"] === inv["product_id"]);
     const borrow = borrowList.find(b => b["borrow_id"] === inv["borrow_id"]);
     
-    // 카드 상단에 제목 표시
+    // 카드 제목
     let cardHTML = `<h2 class="card-title">${product["title"] || ""}</h2>`;
     
     // 메인 정보 영역
@@ -102,7 +96,7 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
     cardHTML += `<span><strong>저자:</strong> ${product["author"] || ""}</span>`;
     cardHTML += `<span><strong>카테고리:</strong> ${product["category"] || ""}</span>`;
     
-    // 태그 표시 (쉼표로 구분)
+    // 태그 표시 (쉼표 구분)
     if (product["tag"]) {
       const tags = product["tag"].split(",").map(t => t.trim()).filter(t => t);
       if (tags.length > 0) {
@@ -114,20 +108,16 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
       }
     }
     
-    // 남은 일수 배지 (숫자 부분만 원형 배지)
+    // 남은 일수 배지 (숫자 부분만 원형 배지로 감싸고 "일 남음"은 배지 내부에 표시)
     if (borrow && borrow["borrow_id"]) {
       const days = parseFloat(borrow["remaining_days"] || "0");
       const badgeColor = getRemainingBadgeColor(days);
-      const displayNumber = days <= 0 ? "0" : days;
-      cardHTML += `
-        <span>
-          <strong>남은 일수:</strong>
-          <span class="badge" style="background-color:${badgeColor}">${displayNumber}</span> 일 남음
-        </span>`;
+      const displayText = (days <= 0) ? "0일 남음" : `${days}일 남음`;
+      cardHTML += `<span class="badge" style="background-color:${badgeColor}">${displayText}</span>`;
     }
     cardHTML += `</div>`; // .main-info 종료
     
-    // 추가 정보 영역 (대출 기록이 있을 경우)
+    // 추가 정보 영역 (대출 기록이 있는 경우)
     if (borrow && borrow["borrow_id"]) {
       cardHTML += `<div class="extra-details">`;
       cardHTML += `<span><strong>군번:</strong> ${borrow["military_id"] || ""}</span>`;
