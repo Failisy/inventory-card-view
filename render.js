@@ -80,13 +80,13 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
   filteredInventory.forEach(inv => {
     const product = productMap[inv.product_id];
     const borrow = borrowMap[inv.borrow_id];
-
+    
     let cardHTML = `<h2 class="card-title">${product.title || ""}</h2>`;
     
-    cardHTML += `<div class="main-info">
-      <span><strong>ISBN:</strong> ${product.ea_isbn || ""}</span>
-      <span><strong>저자:</strong> ${product.author || ""}</span>
-      <span><strong>카테고리:</strong> ${product.category || ""}</span>`;
+    cardHTML += `<div class="main-info">`;
+    cardHTML += `<span><strong>ISBN:</strong> ${product.ea_isbn || ""}</span>`;
+    cardHTML += `<span><strong>저자:</strong> ${product.author || ""}</span>`;
+    cardHTML += `<span><strong>카테고리:</strong> ${product.category || ""}</span>`;
     
     if (product.tag) {
       const tags = product.tag.split(",").map(t => t.trim()).filter(t => t);
@@ -99,11 +99,15 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
       }
     }
     
+    // 남은 일수 배지: 배지 내부에 숫자만 표시, 그 옆에 "일 남음" 텍스트
     if (borrow && borrow.borrow_id) {
       const days = parseFloat(borrow.remaining_days || "0");
       const badgeColor = getRemainingBadgeColor(days);
-      const displayText = days <= 0 ? "0일 남음" : `${days}일 남음`;
-      cardHTML += `<span class="badge" style="background-color:${badgeColor}; color:#000;">${displayText}</span>`;
+      const displayNumber = days <= 0 ? "0" : days;
+      cardHTML += `<span>
+        <span class="badge" style="background-color:${badgeColor}; color:#000;">${displayNumber}</span>
+        일 남음
+      </span>`;
     }
     
     cardHTML += `</div>`;
