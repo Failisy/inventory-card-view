@@ -1,13 +1,5 @@
 import { getRemainingBadgeColor } from "./utils.js";
 
-/**
- * renderCards
- * @param {Array} products
- * @param {Array} borrowList
- * @param {Array} inventoryList
- * @param {String} filter - 검색어
- * @param {Array} selectedFields - 선택된 검색 필드
- */
 export function renderCards(products, borrowList, inventoryList, filter = "", selectedFields = []) {
   const container = document.getElementById("cardContainer");
   container.innerHTML = "";
@@ -16,26 +8,24 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
   const sortOption = document.getElementById("sortSelect").value;
   const query = filter.trim().toLowerCase();
 
-  // Create lookup maps for faster access
-  const productMap = products.reduce((map, product) => {
-    map[product.product_id] = product;
+  // 빠른 접근을 위해 lookup map 생성
+  const productMap = products.reduce((map, prod) => {
+    map[prod.product_id] = prod;
     return map;
   }, {});
-  const borrowMap = borrowList.reduce((map, borrow) => {
-    map[borrow.borrow_id] = borrow;
+  const borrowMap = borrowList.reduce((map, bor) => {
+    map[bor.borrow_id] = bor;
     return map;
   }, {});
 
-  // 1) Filtering
+  // 1) 필터링
   const filteredInventory = inventoryList.filter(inv => {
     const product = productMap[inv.product_id];
     if (!product) return false;
+    
     const borrow = borrowMap[inv.borrow_id];
-
-    // "대출 중" 체크 시
     if (borrowOnly && !(borrow && borrow.borrow_id)) return false;
     
-    // 검색어 필터링: 검색어가 입력된 경우, 선택한 필드 중 하나라도 일치해야 함.
     if (query) {
       return selectedFields.some(field => {
         let value = "";
@@ -50,13 +40,13 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
     return true;
   });
 
-  // 2) Sorting
+  // 2) 정렬
   filteredInventory.sort((a, b) => {
     const prodA = productMap[a.product_id] || {};
     const prodB = productMap[b.product_id] || {};
     const borrowA = borrowMap[a.borrow_id] || {};
     const borrowB = borrowMap[b.borrow_id] || {};
-
+    
     switch (sortOption) {
       case "titleAsc":
         return (prodA.title || "").localeCompare(prodB.title || "");
@@ -83,10 +73,10 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
     }
   });
 
-  // 3) Display result count
+  // 3) 결과 갯수 표시
   document.getElementById("resultCount").innerText = `검색 결과: ${filteredInventory.length}건`;
   
-  // 4) Create and append cards
+  // 4) 카드 생성
   filteredInventory.forEach(inv => {
     const product = productMap[inv.product_id];
     const borrow = borrowMap[inv.borrow_id];
@@ -111,8 +101,9 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
     
     if (borrow && borrow.borrow_id) {
       const days = parseFloat(borrow.remaining_days || "0");
-      const color = getRemainingBadgeColor(days);
-      cardHTML += `<span><strong>남은 일수:</strong> <span style="color:${color}">${days}</span></span>`;
+      const badgeColor = getRemainingBadgeColor(days);
+      const displayText = days <= 0 ? "0일 남음" : `${days}일 남음`;
+      cardHTML += `<span class="badge" style="background-color:${badgeColor}; color:#000;">${displayText}</span>`;
     }
     
     cardHTML += `</div>`;
@@ -130,9 +121,10 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
     card.className = "card";
     card.innerHTML = cardHTML;
     
-    // Toggle extra details on card click if there's a borrow record.
     if (borrow && borrow.borrow_id) {
-      card.addEventListener("click", () => card.classList.toggle("expanded"));
+      card.addEventListener("click", () => {
+        card.classList.toggle("expanded");
+      });
     }
     
     container.appendChild(card);
