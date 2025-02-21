@@ -1,67 +1,17 @@
-/* ----- 새로 추가된 멀티 셀렉트 UI 관련 스타일 ----- */
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: sans-serif;
+  background: #f4f4f4;
+  font-size: 14px;
+}
 
-/* 첫 번째 줄: 멀티 셀렉트 + 검색어 + 검색 버튼 */
+/* 첫 번째 줄: 멀티 셀렉트 + 검색어 입력 + 검색 버튼 */
 .search-row {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 10px;
-}
-
-/* 멀티 셀렉트 컨테이너 */
-.multi-select-container {
-  position: relative;
-  width: 240px;
-  cursor: pointer;
-  background: #fff;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  padding: 8px;
-}
-.selected-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-.tag-chip {
-  background: #ff5252;
-  color: #fff;
-  border-radius: 16px;
-  padding: 3px 10px;
-  font-size: 13px;
-  display: inline-flex;
-  align-items: center;
-}
-.tag-chip span {
-  margin-left: 5px;
-  cursor: pointer;
-  font-weight: bold;
-}
-.options-dropdown {
-  position: absolute;
-  top: 42px;
-  left: 0;
-  width: 100%;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 8px;
-  display: none;
-  flex-direction: column;
-  gap: 4px;
-  z-index: 10; /* 드롭다운이 다른 요소 위로 오도록 */
-}
-.options-dropdown label {
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-}
-
-/* multi-select-container에 .open이 붙으면 드롭다운 표시 */
-.multi-select-container.open .options-dropdown {
-  display: flex;
 }
 
 .search-input-container {
@@ -100,4 +50,80 @@
   font-size: 14px;
 }
 
-/* ----- 기존 카드/검색 결과 스타일은 그대로 유지 or 병합 ----- */
+/* 검색 결과 갯수 */
+#resultCount {
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #333;
+}
+
+/* 카드 컨테이너 및 카드 */
+.card-container {
+  display: block;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.card:hover {
+  background: #f9f9f9;
+}
+.card-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  color: #333;
+}
+
+/* 인라인 정보 컨테이너 */
+.main-info, .extra-details {
+  display: inline-flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  white-space: nowrap;
+}
+.main-info span, .extra-details span {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 태그 스타일 */
+.tag {
+  display: inline-block;
+  background: #e0e0e0;
+  color: #333;
+  padding: 2px 6px;
+  margin-right: 4px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+/* 추가 정보 숨김/토글 */
+.extra-details {
+  display: none;
+  margin-top: 8px;
+}
+.card.expanded .extra-details {
+  display: inline-flex;
+}
+
+/* 배지 스타일: 남은 일수를 원형 배지로, 텍스트는 검정색, 크기는 작게 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  color: #000;
+  font-size: 10px;
+  font-weight: bold;
+ 
