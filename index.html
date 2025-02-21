@@ -3,36 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <title>Inventory Card View</title>
+  <!-- Tom Select CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet"/>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
   <!-- 첫 번째 줄: 멀티 셀렉트 + 검색어 입력 + 검색 버튼 -->
   <div class="search-row">
-    <!-- 커스텀 멀티 셀렉트 -->
-    <div class="multi-select-container" id="multiSelectContainer">
-      <div class="selected-tags" id="selectedTags">
-        <!-- 선택된 항목을 태그 형태로 표시 -->
-      </div>
-      <div class="options-dropdown" id="optionsDropdown">
-        <!-- 옵션 목록 -->
-        <label><input type="checkbox" value="name" /> 이름</label>
-        <label><input type="checkbox" value="military_id" /> 군번</label>
-        <label><input type="checkbox" value="category" /> 카테고리</label>
-        <label><input type="checkbox" value="tag" /> 태그</label>
-        <label><input type="checkbox" value="title" /> 제목</label>
-        <label><input type="checkbox" value="author" /> 저자</label>
-        <label><input type="checkbox" value="publisher" /> 출판사</label>
-        <label><input type="checkbox" value="ea_isbn" /> ISBN</label>
-      </div>
-    </div>
-    
+    <!-- Tom Select 적용 멀티 셀렉트 (기본 선택 없음) -->
+    <select id="searchFieldsSelect" multiple>
+      <option value="name">이름</option>
+      <option value="military_id">군번</option>
+      <option value="category">카테고리</option>
+      <option value="tag">태그</option>
+      <option value="title">제목</option>
+      <option value="author">저자</option>
+      <option value="publisher">출판사</option>
+      <option value="ea_isbn">ISBN</option>
+    </select>
+
     <div class="search-input-container">
       <input type="text" id="searchInput" placeholder="검색어 입력" />
       <button id="searchBtn">검색</button>
     </div>
   </div>
   
-  <!-- 두 번째 줄: 왼쪽 체크박스(대출 중), 오른쪽 정렬 드롭다운 -->
+  <!-- 두 번째 줄: 왼쪽에 "대출 중" 체크박스, 오른쪽에 정렬 드롭다운 -->
   <div class="options-row">
     <div class="borrow-toggle">
       <label>
@@ -57,11 +54,12 @@
     </div>
   </div>
 
-  <!-- 검색 결과 갯수 및 카드 목록 표시 -->
+  <!-- 검색 결과 갯수 및 카드 컨테이너 -->
   <div id="resultCount"></div>
   <div class="card-container" id="cardContainer"></div>
 
-  <!-- 모듈 스크립트 (api.js, utils.js, render.js, main.js 등) -->
+  <!-- Tom Select JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
   <script type="module" src="main.js"></script>
 </body>
 </html>
