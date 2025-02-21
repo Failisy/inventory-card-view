@@ -1,4 +1,4 @@
-import { getRemainingColor } from "./utils.js";
+import { getRemainingBadgeColor } from "./utils.js";
 
 /**
  * renderCards
@@ -15,86 +15,92 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
   const borrowOnly = document.getElementById("borrowToggle").checked;
   const sortOption = document.getElementById("sortSelect").value;
   const query = filter.trim().toLowerCase();
-  
-  // 1) 필터링
-  let filteredInventory = inventoryList.filter(inv => {
-    const product = products.find(p => p["product_id"] === inv["product_id"]);
+
+  // Create lookup maps for faster access
+  const productMap = products.reduce((map, product) => {
+    map[product.product_id] = product;
+    return map;
+  }, {});
+  const borrowMap = borrowList.reduce((map, borrow) => {
+    map[borrow.borrow_id] = borrow;
+    return map;
+  }, {});
+
+  // 1) Filtering
+  const filteredInventory = inventoryList.filter(inv => {
+    const product = productMap[inv.product_id];
     if (!product) return false;
-    const borrow = borrowList.find(b => b["borrow_id"] === inv["borrow_id"]);
+    const borrow = borrowMap[inv.borrow_id];
+
     // "대출 중" 체크 시
-    if (borrowOnly && !(borrow && borrow["borrow_id"])) return false;
+    if (borrowOnly && !(borrow && borrow.borrow_id)) return false;
     
-    // 검색어가 있을 경우, selectedFields 배열에 포함된 항목 중 하나라도 match해야
+    // 검색어 필터링: 검색어가 입력된 경우, 선택한 필드 중 하나라도 일치해야 함.
     if (query) {
-      let found = false;
-      selectedFields.forEach(field => {
+      return selectedFields.some(field => {
         let value = "";
         if (["name", "military_id", "unit", "rank"].includes(field)) {
-          if (borrow && borrow[field]) value = borrow[field].toString().toLowerCase();
+          value = borrow ? borrow[field] : "";
         } else {
-          if (product[field]) value = product[field].toString().toLowerCase();
+          value = product[field];
         }
-        if (value.includes(query)) {
-          found = true;
-        }
+        return value && value.toString().toLowerCase().includes(query);
       });
-      if (!found) return false;
     }
     return true;
   });
-  
-  // 2) 정렬
+
+  // 2) Sorting
   filteredInventory.sort((a, b) => {
-    const prodA = products.find(p => p["product_id"] === a["product_id"]);
-    const prodB = products.find(p => p["product_id"] === b["product_id"]);
-    const borrowA = borrowList.find(x => x["borrow_id"] === a["borrow_id"]);
-    const borrowB = borrowList.find(x => x["borrow_id"] === b["borrow_id"]);
-    
+    const prodA = productMap[a.product_id] || {};
+    const prodB = productMap[b.product_id] || {};
+    const borrowA = borrowMap[a.borrow_id] || {};
+    const borrowB = borrowMap[b.borrow_id] || {};
+
     switch (sortOption) {
       case "titleAsc":
-        return (prodA["title"]||"").localeCompare(prodB["title"]||"");
+        return (prodA.title || "").localeCompare(prodB.title || "");
       case "titleDesc":
-        return (prodB["title"]||"").localeCompare(prodA["title"]||"");
+        return (prodB.title || "").localeCompare(prodA.title || "");
       case "authorAsc":
-        return (prodA["author"]||"").localeCompare(prodB["author"]||"");
+        return (prodA.author || "").localeCompare(prodB.author || "");
       case "authorDesc":
-        return (prodB["author"]||"").localeCompare(prodA["author"]||"");
+        return (prodB.author || "").localeCompare(prodA.author || "");
       case "categoryAsc":
-        return (prodA["category"]||"").localeCompare(prodB["category"]||"");
+        return (prodA.category || "").localeCompare(prodB.category || "");
       case "categoryDesc":
-        return (prodB["category"]||"").localeCompare(prodA["category"]||"");
+        return (prodB.category || "").localeCompare(prodA.category || "");
       case "remainingAsc":
-        return parseFloat(borrowA?.["remaining_days"]||Infinity) - parseFloat(borrowB?.["remaining_days"]||Infinity);
+        return parseFloat(borrowA.remaining_days || Infinity) - parseFloat(borrowB.remaining_days || Infinity);
       case "remainingDesc":
-        return parseFloat(borrowB?.["remaining_days"]||-Infinity) - parseFloat(borrowA?.["remaining_days"]||-Infinity);
+        return parseFloat(borrowB.remaining_days || -Infinity) - parseFloat(borrowA.remaining_days || -Infinity);
       case "unitAsc":
-        return (borrowA?.["unit"]||"").localeCompare(borrowB?.["unit"]||"");
+        return (borrowA.unit || "").localeCompare(borrowB.unit || "");
       case "unitDesc":
-        return (borrowB?.["unit"]||"").localeCompare(borrowA?.["unit"]||"");
+        return (borrowB.unit || "").localeCompare(borrowA.unit || "");
       default:
         return 0;
     }
   });
+
+  // 3) Display result count
+  document.getElementById("resultCount").innerText = `검색 결과: ${filteredInventory.length}건`;
   
-  // 3) 결과 갯수 표시
-  document.getElementById("resultCount").innerText = "검색 결과: " + filteredInventory.length + "건";
-  
-  // 4) 카드 생성
+  // 4) Create and append cards
   filteredInventory.forEach(inv => {
-    const product = products.find(p => p["product_id"] === inv["product_id"]);
-    const borrow = borrowList.find(b => b["borrow_id"] === inv["borrow_id"]);
+    const product = productMap[inv.product_id];
+    const borrow = borrowMap[inv.borrow_id];
+
+    let cardHTML = `<h2 class="card-title">${product.title || ""}</h2>`;
     
-    // 카드 타이틀
-    let cardHTML = `<h2 class="card-title">${product["title"]||""}</h2>`;
+    cardHTML += `<div class="main-info">
+      <span><strong>ISBN:</strong> ${product.ea_isbn || ""}</span>
+      <span><strong>저자:</strong> ${product.author || ""}</span>
+      <span><strong>카테고리:</strong> ${product.category || ""}</span>`;
     
-    // 메인 정보
-    cardHTML += `<div class="main-info">`;
-    cardHTML += `<span><strong>ISBN:</strong> ${product["ea_isbn"]||""}</span>`;
-    cardHTML += `<span><strong>저자:</strong> ${product["author"]||""}</span>`;
-    cardHTML += `<span><strong>카테고리:</strong> ${product["category"]||""}</span>`;
-    if(product["tag"]) {
-      const tags = product["tag"].split(",").map(t => t.trim()).filter(t => t);
-      if(tags.length > 0) {
+    if (product.tag) {
+      const tags = product.tag.split(",").map(t => t.trim()).filter(t => t);
+      if (tags.length > 0) {
         cardHTML += `<span><strong>태그:</strong> `;
         tags.forEach(tg => {
           cardHTML += `<span class="tag">${tg}</span>`;
@@ -102,32 +108,31 @@ export function renderCards(products, borrowList, inventoryList, filter = "", se
         cardHTML += `</span>`;
       }
     }
-    if(borrow && borrow["borrow_id"]) {
-      const days = parseFloat(borrow["remaining_days"]||"0");
-      const color = getRemainingColor(days);
+    
+    if (borrow && borrow.borrow_id) {
+      const days = parseFloat(borrow.remaining_days || "0");
+      const color = getRemainingBadgeColor(days);
       cardHTML += `<span><strong>남은 일수:</strong> <span style="color:${color}">${days}</span></span>`;
     }
+    
     cardHTML += `</div>`;
     
-    // 추가 정보 (대출 기록이 있는 경우)
-    if(borrow && borrow["borrow_id"]) {
-      cardHTML += `<div class="extra-details">`;
-      cardHTML += `<span><strong>군번:</strong> ${borrow["military_id"]||""}</span>`;
-      cardHTML += `<span><strong>부대:</strong> ${borrow["unit"]||""}</span>`;
-      cardHTML += `<span><strong>계급:</strong> ${borrow["rank"]||""}</span>`;
-      cardHTML += `<span><strong>이름:</strong> ${borrow["name"]||""}</span>`;
-      cardHTML += `</div>`;
+    if (borrow && borrow.borrow_id) {
+      cardHTML += `<div class="extra-details">
+        <span><strong>군번:</strong> ${borrow.military_id || ""}</span>
+        <span><strong>부대:</strong> ${borrow.unit || ""}</span>
+        <span><strong>계급:</strong> ${borrow.rank || ""}</span>
+        <span><strong>이름:</strong> ${borrow.name || ""}</span>
+      </div>`;
     }
     
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = cardHTML;
     
-    // 카드 클릭 시 추가 정보 토글
-    if(borrow && borrow["borrow_id"]) {
-      card.addEventListener("click", () => {
-        card.classList.toggle("expanded");
-      });
+    // Toggle extra details on card click if there's a borrow record.
+    if (borrow && borrow.borrow_id) {
+      card.addEventListener("click", () => card.classList.toggle("expanded"));
     }
     
     container.appendChild(card);
